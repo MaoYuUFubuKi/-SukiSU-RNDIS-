@@ -1,0 +1,32 @@
+#!/system/bin/sh
+# =====================================================================
+#  bin/udhcpc.script —— busybox udhcpc 的事件脚本
+#  $1 = deconfig | bound | renew | leasefail
+#  udhcpc 通过环境变量传参：interface / ip / mask / router / dns / serverid
+# =====================================================================
+
+case "$1" in
+    deconfig)
+        ip addr flush dev "$interface" 2>/dev/null
+        ip link set "$interface" up 2>/dev/null
+        ;;
+    bound|renew)
+        ip addr flush dev "$interface" 2>/dev/null
+        ip addr add "$ip/$mask" dev "$interface" 2>/dev/null
+        ip link set "$interface" up 2>/dev/null
+        if [ -n "$router" ]; then
+            for _r in $router; do
+                ip route replace default via "$_r" dev "$interface" 2>/dev/null && break
+            done
+            echo "$router" > /data/local/tmp/simcom_rndis.gw
+        fi
+        [ -n "$dns" ] && echo "$dns" > /data/local/tmp/simcom_rndis.dns
+        echo "$(date '+%m-%d %H:%M:%S') lease $1 ip=$ip/$mask gw=$router dns=$dns" \
+            >> /data/local/tmp/simcom_rndis.log
+        ;;
+    leasefail)
+        echo "$(date '+%m-%d %H:%M:%S') lease fail" >> /data/local/tmp/simcom_rndis.log
+        ;;
+esac
+
+exit 0

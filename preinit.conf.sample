@@ -1,0 +1,26 @@
+# 可选的“更早加载”方案
+# ---------------------------------------------------------------------
+# 如果 post-fs-data.sh 里的 insmod 被 SELinux / 权限挡住（日志里能看到
+# "Permission denied" 或 "avc: denied"），可以改用 KernelSU 的 preinit：
+# preinit 在 SELinux 策略加载之前执行，专门就是给“加载内核模块”用的。
+#
+# 用法：
+#   1. mkdir -p /data/adb/modules/simcom_rndis_otg/preinit/kmod
+#   2. 拷 .ko 到上面那个 kmod/ 目录
+#   3. cp 本文件到 /data/adb/modules/simcom_rndis_otg/preinit/preinit.conf
+#   4. 重启（preinit 不热生效）
+#
+# 注意：
+#   * 只有两阶段 init 的设备支持，late-load 模式不支持
+#   * preinit 阶段 /dev 还没有 ueventd，/apex 没挂，且 30 秒超时
+#   * 一行一个动作；行尾加 ? 表示失败也继续
+#   * 动作里的相对路径相对于 preinit/ 目录
+# ---------------------------------------------------------------------
+
+# 依赖先来，失败也继续
+insmod?  kmod/usbnet.ko
+insmod?  kmod/cdc_ether.ko
+insmod?  kmod/mii.ko
+
+# 本体
+insmod   kmod/rndis_host.ko

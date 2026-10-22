@@ -1,0 +1,6 @@
+id=simcom_rndis_otg
+name=USB RNDIS 网卡支持 (SIMCom 1E0E:3487)
+version=v1.1.0
+versionCode=10100
+author=dsh-agent
+description=给 USB\VID_1E0E&PID_3487&MI_00 这类 RNDIS 设备加载 rndis_host 驱动并把 usb0 拉起来（DHCP / 默认路由 / DNS）。适用于 SukiSU、KernelSU、Magisk。
